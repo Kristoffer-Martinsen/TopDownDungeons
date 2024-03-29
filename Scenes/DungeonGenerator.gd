@@ -8,14 +8,12 @@ var wall_cells: Array[Vector2i]
 var floor_cells: Array[Vector2i]
 var room_center_array: Array[Vector2i]
 
-
 func _ready() -> void:
-	Pathfinding.set_tile_map(tile_map)
+	Globals.TILE_MAP = tile_map
 	randomize()
 	place_walls()
 	for i in 50:
 		create_room(choose_start_point())
-	_connect_room_centers()
 	tile_map.set_cells_terrain_connect(0, wall_cells, 0, 0)
 	tile_map.set_cells_terrain_connect(0, floor_cells, 0, 1)
 
@@ -44,8 +42,7 @@ func _connect_room_centers() -> void:
 	while room_center_array.size() > 0:
 		var start_center: Vector2i = room_center_array.pop_front()
 		var next_center: Vector2i = room_center_array[0]
-		
-	pass
+
 
 func place_walls() -> void:
 	for x in range(height):

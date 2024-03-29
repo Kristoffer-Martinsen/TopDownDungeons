@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://bwbcis71vkd4o"]
+[gd_scene load_steps=5 format=3 uid="uid://bwbcis71vkd4o"]
 
 [ext_resource type="Texture2D" uid="uid://bexb7jqe5e5lq" path="res://Assets/PlayerSprite.png" id="1_42r2q"]
-[ext_resource type="Script" path="res://Scenes/player.gd" id="1_w6hjh"]
+[ext_resource type="Script" path="res://Scenes/Actor/Player/player.gd" id="1_w6hjh"]
 [ext_resource type="Script" path="res://Scenes/DrawPath.gd" id="3_766go"]
+[ext_resource type="PackedScene" uid="uid://3xljgit1ojki" path="res://Utility/Pathfinding/path_finding_component.tscn" id="4_f7ebb"]
 
 [node name="Player" type="Node2D"]
 script = ExtResource("1_w6hjh")
@@ -17,3 +18,5 @@ region_rect = Rect2(0, 0, 16, 16)
 
 [node name="Path" type="Node2D" parent="."]
 script = ExtResource("3_766go")
+
+[node name="PathFindingComponent" parent="." instance=ExtResource("4_f7ebb")]

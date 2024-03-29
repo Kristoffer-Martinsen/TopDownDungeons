@@ -11,13 +11,13 @@ config_version=5
 [application]
 
 config/name="TopDownDungeons"
-run/main_scene="res://Scenes/game_handler.tscn"
+run/main_scene="res://Scenes/Game/game_handler.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Pathfinding="*res://autoload/pathfinding.gd"
+Globals="*res://autoload/Globals.gd"
 
 [display]
 

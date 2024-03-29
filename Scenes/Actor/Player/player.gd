@@ -1,6 +1,7 @@
 extends Node2D
 
 @onready var tile_map = $"../Dungeon/TileMap"
+@onready var pathfinding = $"PathFindingComponent"
 
 var astar_grid: AStarGrid2D
 var current_id_path: Array[Vector2i]
@@ -16,6 +17,7 @@ func _ready() -> void:
 	astar_grid.cell_size = Vector2(16, 16)
 	astar_grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
 	astar_grid.update()
+	Globals.ASTAR_GRID = astar_grid
 
 	for x in tile_map.get_used_rect().size.x:
 		for y in tile_map.get_used_rect().size.y:
@@ -24,7 +26,6 @@ func _ready() -> void:
 				y + tile_map.get_used_rect().position.y
 			)
 			var tile_data = tile_map.get_cell_tile_data(0, tile_position)
-
 			if tile_data == null or tile_data.get_custom_data("walkable") == false:
 				astar_grid.set_point_solid(tile_position)
 
@@ -33,24 +34,12 @@ func _input(event: InputEvent) -> void:
 		get_tree().reload_current_scene()
 	if event.is_action_pressed('move') == false:
 		return
-
-	var id_path
-	if is_moving:	
-		id_path = astar_grid.get_id_path(
-			tile_map.local_to_map(target_position),
-			tile_map.local_to_map(get_global_mouse_position())
-		)
-	else:
-		id_path = astar_grid.get_id_path(
-			tile_map.local_to_map(global_position),
-			tile_map.local_to_map(get_global_mouse_position())).slice(1)
-
-	if id_path.is_empty() == false:
-		current_id_path = id_path
-		current_point_path = astar_grid.get_point_path(
-			tile_map.local_to_map(target_position),
-			tile_map.local_to_map(get_global_mouse_position())
-		)
+	#TODO Probably need to refactor this to not take a million params
+	current_id_path = pathfinding.get_move_path(is_moving, 
+												target_position, 
+												get_global_mouse_position(), 
+												current_id_path, 
+												current_point_path)
 
 func _physics_process(delta: float) -> void:
 	if current_id_path.is_empty():
