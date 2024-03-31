@@ -3,7 +3,6 @@ class_name DungeonGenerator
 
 signal character_spawn
 
-static var astar_grid: AStarGrid2D
 static var tile_map: TileMap 
 
 @export var width: int = 100
@@ -17,18 +16,13 @@ var spawn_location: Vector2
 
 func _ready() -> void:
 	tile_map = get_node("TileMap")
-	astar_grid = AStarGrid2D.new()
-	astar_grid.region = tile_map.get_used_rect()
-	astar_grid.cell_size = Vector2(16, 16)
-	astar_grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
-	astar_grid.update()
-	astar_grid = astar_grid
-	_get_tile_data()
 	
 	randomize()
 	place_walls()
+	
 	for i in 50:
 		create_room(choose_start_point())
+		
 	tile_map.set_cells_terrain_connect(0, wall_cells, 0, 0)
 	tile_map.set_cells_terrain_connect(0, floor_cells, 0, 1)
 	SignalBus.emit_signal("dungeon_generation_complete")
@@ -64,20 +58,10 @@ func _connect_room_centers() -> void:
 		var start_center: Vector2i = room_center_array.pop_front()
 		var next_center: Vector2i = room_center_array[0]
 
-
 func place_walls() -> void:
 	for x in range(height):
 		for y in range(width):
 			wall_cells.append(Vector2i(x,y))
 			tile_map.set_cell(0, Vector2i(x, y), 0, Vector2i(0,0))
 
-func _get_tile_data() -> void:
-	for x in tile_map.get_used_rect().size.x:
-		for y in tile_map.get_used_rect().size.y:
-			var tile_position = Vector2i(
-				x + tile_map.get_used_rect().position.x,
-				y + tile_map.get_used_rect().position.y
-			)
-			var tile_data = tile_map.get_cell_tile_data(0, tile_position)
-			if tile_data == null or tile_data.get_custom_data("walkable") == false:
-				astar_grid.set_point_solid(tile_position)
+
