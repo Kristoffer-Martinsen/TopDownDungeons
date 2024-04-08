@@ -1,8 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://ca6f5abnxa013"]
+[gd_scene load_steps=10 format=3 uid="uid://ca6f5abnxa013"]
 
 [ext_resource type="Script" path="res://Scenes/DungeonGenerator.gd" id="1_86cdp"]
 [ext_resource type="Texture2D" uid="uid://cct231uq3w2ht" path="res://Assets/DungeonTileset/tileset_DungeonTileset.png" id="1_ji5ui"]
 [ext_resource type="Texture2D" uid="uid://c3m674tcm0vwo" path="res://Assets/DungeonTileset/tileset_DungeonTileset_floor.png" id="2_ebokx"]
+[ext_resource type="PackedScene" uid="uid://3xljgit1ojki" path="res://Utility/Pathfinding/path_finding_component.tscn" id="4_qod5f"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_u5s8b"]
 texture = ExtResource("1_ji5ui")
@@ -544,3 +545,5 @@ script = ExtResource("1_86cdp")
 texture_filter = 1
 tile_set = SubResource("TileSet_sgocb")
 format = 2
+
+[node name="PathFindingComponent" parent="." instance=ExtResource("4_qod5f")]

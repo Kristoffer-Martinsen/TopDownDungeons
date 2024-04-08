@@ -11,8 +11,11 @@ func _input(event: InputEvent) -> void:
 		get_tree().reload_current_scene()
 	if event.is_action_pressed('move') == false:
 		return
-	#TODO Probably need to refactor this to not take a million params
-	pathfinding.current_id_path = pathfinding.get_move_path(global_position, get_global_mouse_position())
+	var path_to_move
+	if is_moving:
+		path_to_move = pathfinding.get_move_path(pathfinding.next_point_in_path, get_global_mouse_position())
+	else:
+		path_to_move = pathfinding.get_move_path(global_position, get_global_mouse_position())
 
 func _physics_process(delta: float) -> void:
 	if pathfinding.current_id_path.is_empty():
