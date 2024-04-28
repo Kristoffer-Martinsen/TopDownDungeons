@@ -7,9 +7,10 @@ signal character_spawn
 
 static var tile_map: TileMap 
 
-@export var width: int = 100
-@export var height: int = 100
+#@export var width: int = 100
+#@export var height: int = 100
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var number_of_rooms: int = 50
 var wall_cells: Array[Vector2i]
 var floor_cells: Array[Vector2i]
 var room_center_array: Array[Vector2i]
@@ -20,7 +21,7 @@ func _ready() -> void:
 	tile_map = get_node("TileMap")
 	randomize()
 	place_walls()
-	for i in 50:
+	for i in number_of_rooms:
 		create_room(choose_start_point())
 	_connect_room_centers()
 	tile_map.set_cells_terrain_connect(0, wall_cells, 0, 0)
@@ -28,7 +29,7 @@ func _ready() -> void:
 	SignalBus.emit_signal("dungeon_generation_complete")
 
 func choose_start_point() -> Vector2i:
-	return Vector2i(rng.randi_range(1, width), rng.randi_range(1, height))
+	return Vector2i(rng.randi_range(1, Globals.ASTAR_DIMENSIONS.size.x), rng.randi_range(1, Globals.ASTAR_DIMENSIONS.size.y))
 
 func create_room(tile_position: Vector2i) -> void:
 	var min_room_width: int = 4
@@ -51,17 +52,11 @@ func create_room(tile_position: Vector2i) -> void:
 	room_center_array.append(center_of_room)
 
 func _connect_room_centers() -> void:
-	while room_center_array.size() > 0:
-		var start_center: Vector2i = room_center_array.pop_front()
-		if room_center_array.size() > 1:
-			var next_center: Vector2i = room_center_array[0]
-			
-		else:
-			return
+	pass
 
 func place_walls() -> void:
-	for x in range(height):
-		for y in range(width):
+	for x in range(Globals.ASTAR_DIMENSIONS.size.x):
+		for y in range(Globals.ASTAR_DIMENSIONS.size.y):
 			wall_cells.append(Vector2i(x,y))
 			tile_map.set_cell(0, Vector2i(x, y), 0, Vector2i(0,0))
 

@@ -9,6 +9,7 @@ const SPEED = 300.0
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed('DEBUG_restart'):
 		get_tree().reload_current_scene()
+		#Globals.create_astar2d_grid()
 	if event.is_action_pressed('move') == false:
 		return
 	var path_to_move
