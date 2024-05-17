@@ -10,7 +10,7 @@ static var tile_map: TileMap
 #@export var width: int = 100
 #@export var height: int = 100
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-var number_of_rooms: int = 50
+var number_of_rooms: int = 10
 var wall_cells: Array[Vector2i]
 var floor_cells: Array[Vector2i]
 var room_center_array: Array[Vector2i]
@@ -23,8 +23,6 @@ func _ready() -> void:
 	place_walls()
 	for i in number_of_rooms:
 		create_room(choose_start_point())
-	print(room_center_array)
-	print("--------------------------------------------------")
 	_connect_room_centers()
 	tile_map.set_cells_terrain_connect(0, wall_cells, 0, 0)
 	tile_map.set_cells_terrain_connect(0, floor_cells, 0, 1)
@@ -55,19 +53,16 @@ func create_room(tile_position: Vector2i) -> void:
 		var center_of_room: Vector2i = Vector2i(floor(tile_position.x + room_width / 2), floor(tile_position.y + room_height / 2))
 		room_center_array.append(center_of_room)
 
-
 func _connect_room_centers() -> void:
-	var first_room: Vector2i
-	var second_room: Vector2i
+	var corridor_start: Vector2i
+	var corridor_end: Vector2i
 	for room in room_center_array:
 		if room_center_array.size() > 1:
-			first_room = room_center_array.pop_front()
-			second_room = room_center_array.front()
-		var corridor_path: Array[Vector2i] = pathfinding.get_move_path(first_room, second_room)
+			corridor_start = room_center_array.pop_front()
+			corridor_end = room_center_array.front()
+		var corridor_path: Array[Vector2i] = pathfinding.get_move_path(corridor_start, corridor_end)
 		for c in corridor_path:
 			tile_map.set_cell(0, c, 1, Vector2i(1,0))
-		print(corridor_path)
-		print("------------------------------------------------------------")
 	pass
 
 func _validate_room_placement(starting_tile: Vector2i, room_w: int, room_h: int) -> bool:
