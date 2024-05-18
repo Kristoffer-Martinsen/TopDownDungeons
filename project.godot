@@ -26,6 +26,10 @@ window/size/viewport_width=320
 window/size/viewport_height=200
 window/stretch/mode="viewport"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/Todo_Manager/plugin.cfg")
+
 [input]
 
 move={
