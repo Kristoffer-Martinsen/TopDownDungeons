@@ -1,3 +1,4 @@
 extends Node
 
 signal dungeon_generation_complete
+signal dungeon_tileset_generated

@@ -1,16 +1,13 @@
 extends Node2D
 class_name DungeonGenerator
 
-signal character_spawn
-signal room_bodies_gen_done
-
 @onready var pathfinding: Pathfinding = $"PathFindingComponent"
 @onready var room_body_scene: PackedScene = preload('res://Scenes/room_body.tscn')
 
 static var tile_map: TileMap
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-var number_of_rooms: int = 50
+var number_of_rooms: int = 40
 var wall_cells: Array[Vector2i]
 var floor_cells: Array[Vector2i]
 var spawn_location: Vector2
@@ -22,12 +19,12 @@ var room_dict: Dictionary = {}
 func _ready() -> void:
 	tile_map = get_node("TileMap")
 	randomize()
-	place_walls()
 	for r in number_of_rooms:
 		create_room_bodies(Vector2i(50, 50))
 	await get_tree().create_timer(0.5).timeout
-	emit_signal("room_bodies_gen_done")
-	_connect_room_centers()
+	generate_tilemap()
+
+	#_connect_room_centers()
 	tile_map.set_cells_terrain_connect(0, wall_cells, 0, 0)
 	tile_map.set_cells_terrain_connect(0, floor_cells, 0, 1)
 	SignalBus.emit_signal("dungeon_generation_complete")
@@ -47,10 +44,10 @@ func create_room_bodies(tile_position: Vector2i) -> void:
 		room_width * cell_size.x + room_body_gen_padding, 
 		room_height * cell_size.y + room_body_gen_padding
 		)
+	collision_shape.position += Vector2(collision_shape.shape.size.x / 2, collision_shape.shape.size.y / 2)
 	get_node('Rooms').add_child(room_body)
-
+	room_body.global_position = tile_map.local_to_map(floor(room_body.global_position))
 	spawn_location = Vector2(50, 50)
-	emit_signal("character_spawn", spawn_location)
 
 func _connect_room_centers() -> void:
 	var corridor_start: Vector2i
@@ -66,33 +63,23 @@ func _connect_room_centers() -> void:
 			tile_map.set_cell(0, Vector2i(c.x, c.y), 1, Vector2i(1,0))
 			wall_cells.erase(Vector2i(c.x, c.y))
 
-func _generate_corridor_tree() -> void:
-	pass
-
-func _validate_room_placement(starting_tile: Vector2i, room_w: int, room_h: int) -> bool:
-	if starting_tile.x + room_w >= Globals.ASTAR_DIMENSIONS.size.x or starting_tile.y + room_h >= Globals.ASTAR_DIMENSIONS.size.y:
-		return false
-	
-	if tile_map.get_cell_tile_data(0, Vector2i(starting_tile.x, starting_tile.y)).get_custom_data("wall") == true \
-	and tile_map.get_cell_tile_data(0, Vector2i(starting_tile.x + room_w, starting_tile.y)).get_custom_data("wall") == true \
-	and tile_map.get_cell_tile_data(0, Vector2i(starting_tile.x, starting_tile.y + room_h)).get_custom_data("wall") == true \
-	and tile_map.get_cell_tile_data(0, Vector2i(starting_tile.x + room_w, starting_tile.y + room_h)).get_custom_data("wall") == true:
-		return true
-	return false
-
 func place_walls() -> void:
-	for x in range(Globals.ASTAR_DIMENSIONS.size.x):
-		for y in range(Globals.ASTAR_DIMENSIONS.size.y):
+	for x in range(-Globals.ASTAR_DIMENSIONS.size.x, Globals.ASTAR_DIMENSIONS.size.x):
+		for y in range(-Globals.ASTAR_DIMENSIONS.size.y, Globals.ASTAR_DIMENSIONS.size.y):
 			wall_cells.append(Vector2i(x,y))
 			tile_map.set_cell(0, Vector2i(x, y), 0, Vector2i(0,0))
 
-func _on_room_bodies_gen_done() -> void:
+func generate_tilemap() -> void:
 	for r in get_node('Rooms').get_children():
 		room_dict[tile_map.local_to_map(r.global_position)] = Vector2(r.get_node("CollisionShape2D").shape.size / cell_size)
+
+	place_walls()
 	#TODO make ASTAR grid and tilemap use tile_map.get_ised_rect()
 	#TODO remove padding from physics body when creating the rooms on the tilemap
 	#HACK jesus what even is this
+	print(room_dict)
 	for key in room_dict.keys():
+		print(room_dict[key])
 		for w in room_dict[key].x:
 			for h in room_dict[key].y:
 				floor_cells.append(Vector2i(w + key.x, h + key.y))

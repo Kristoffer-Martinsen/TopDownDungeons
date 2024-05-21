@@ -598,5 +598,3 @@ format = 2
 [node name="PathFindingComponent" parent="." instance=ExtResource("4_qod5f")]
 
 [node name="Rooms" type="Node2D" parent="."]
-
-[connection signal="room_bodies_gen_done" from="." to="." method="_on_room_bodies_gen_done"]

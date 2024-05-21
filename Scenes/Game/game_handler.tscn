@@ -7,5 +7,3 @@
 script = ExtResource("1_5h2gm")
 
 [node name="Dungeon" parent="." instance=ExtResource("2_dd75c")]
-
-[connection signal="character_spawn" from="Dungeon" to="." method="_on_dungeon_character_spawn"]
