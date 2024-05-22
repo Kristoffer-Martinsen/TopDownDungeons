@@ -22,7 +22,7 @@ func _ready() -> void:
 	for r in number_of_rooms:
 		create_room_bodies(Vector2i(50, 50))
 	await get_tree().create_timer(0.5).timeout
-	generate_tilemap()
+	generate_room_floors()
 
 	#_connect_room_centers()
 	tile_map.set_cells_terrain_connect(0, wall_cells, 0, 0)
@@ -64,26 +64,23 @@ func _connect_room_centers() -> void:
 			wall_cells.erase(Vector2i(c.x, c.y))
 
 func place_walls() -> void:
-	for x in range(-Globals.ASTAR_DIMENSIONS.size.x, Globals.ASTAR_DIMENSIONS.size.x):
-		for y in range(-Globals.ASTAR_DIMENSIONS.size.y, Globals.ASTAR_DIMENSIONS.size.y):
+	for x in range(Globals.ASTAR_DIMENSIONS.position.x, Globals.ASTAR_DIMENSIONS.position.x + Globals.ASTAR_DIMENSIONS.size.x):
+		for y in range(Globals.ASTAR_DIMENSIONS.position.y, Globals.ASTAR_DIMENSIONS.position.y + Globals.ASTAR_DIMENSIONS.size.y):
 			wall_cells.append(Vector2i(x,y))
 			tile_map.set_cell(0, Vector2i(x, y), 0, Vector2i(0,0))
 
-func generate_tilemap() -> void:
+func generate_room_floors() -> void:
 	for r in get_node('Rooms').get_children():
-		room_dict[tile_map.local_to_map(r.global_position)] = Vector2(r.get_node("CollisionShape2D").shape.size / cell_size)
-
-	place_walls()
-	#TODO make ASTAR grid and tilemap use tile_map.get_ised_rect()
-	#TODO remove padding from physics body when creating the rooms on the tilemap
-	#HACK jesus what even is this
-	print(room_dict)
-	for key in room_dict.keys():
-		print(room_dict[key])
-		for w in room_dict[key].x:
-			for h in room_dict[key].y:
-				floor_cells.append(Vector2i(w + key.x, h + key.y))
-				tile_map.set_cell(0, Vector2i(w + key.x, h + key.y), 1, Vector2i(1,0))
-				wall_cells.erase(Vector2i(w + key.x, h + key.y))
-		var center_of_room: Vector2i = Vector2i(floor(key.x + room_dict[key].x / 2), floor(key.y + room_dict[key].y / 2))
+		var r_size = Vector2(r.get_node("CollisionShape2D").shape.size / cell_size)
+		var r_pos = tile_map.local_to_map(r.global_position)
+		#room_dict[tile_map.local_to_map(r.global_position)] = Vector2(r.get_node("CollisionShape2D").shape.size / cell_size)
+		for w in r_size.x:
+			for h in r_size.y:
+				floor_cells.append(Vector2i(w + r_pos.x, h + r_pos.y))
+				tile_map.set_cell(0, Vector2i(w + r_pos.x, h + r_pos.y), 1, Vector2i(1,0))
+				wall_cells.erase(Vector2i(w + r_pos.x, h + r_pos.y))
+		var center_of_room: Vector2i = Vector2i(floor(r_pos.x + r_size.x / 2), floor(r_pos.y + r_size.y / 2))
 		room_center_array.append(center_of_room)
+	Globals.ASTAR_DIMENSIONS = tile_map.get_used_rect()
+	place_walls()
+	SignalBus.emit_signal("dungeon_tileset_generated")
