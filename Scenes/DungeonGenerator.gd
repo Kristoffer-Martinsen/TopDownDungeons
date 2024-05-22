@@ -14,16 +14,14 @@ var spawn_location: Vector2
 var cell_size: Vector2 = Vector2(16, 16)
 var room_center_array: Array[Vector2i]
 var room_body_gen_padding: int = 64
-var room_dict: Dictionary = {}
 
 func _ready() -> void:
 	tile_map = get_node("TileMap")
 	randomize()
 	for r in number_of_rooms:
 		create_room_bodies(Vector2i(50, 50))
-	await get_tree().create_timer(0.5).timeout
+	await get_tree().create_timer(0.5).timeout # give the physics engine time to sort out collisions
 	generate_room_floors()
-
 	#_connect_room_centers()
 	tile_map.set_cells_terrain_connect(0, wall_cells, 0, 0)
 	tile_map.set_cells_terrain_connect(0, floor_cells, 0, 1)
@@ -46,7 +44,7 @@ func create_room_bodies(tile_position: Vector2i) -> void:
 		)
 	collision_shape.position += Vector2(collision_shape.shape.size.x / 2, collision_shape.shape.size.y / 2)
 	get_node('Rooms').add_child(room_body)
-	room_body.global_position = tile_map.local_to_map(floor(room_body.global_position))
+	room_body.global_position += Vector2(rng.randi_range(-10, 10), rng.randi_range(-10, 10))
 	spawn_location = Vector2(50, 50)
 
 func _connect_room_centers() -> void:
@@ -73,7 +71,7 @@ func generate_room_floors() -> void:
 	for r in get_node('Rooms').get_children():
 		var r_size = Vector2(r.get_node("CollisionShape2D").shape.size / cell_size)
 		var r_pos = tile_map.local_to_map(r.global_position)
-		#room_dict[tile_map.local_to_map(r.global_position)] = Vector2(r.get_node("CollisionShape2D").shape.size / cell_size)
+		# TODO cull some rooms
 		for w in r_size.x:
 			for h in r_size.y:
 				floor_cells.append(Vector2i(w + r_pos.x, h + r_pos.y))
