@@ -68,19 +68,24 @@ func place_walls() -> void:
 			tile_map.set_cell(0, Vector2i(x, y), 0, Vector2i(0,0))
 
 func generate_room_floors() -> void:
-	for r in get_node('Rooms').get_children():
+	var room_bodies = get_node('Rooms').get_children()
+	room_bodies.shuffle()
+	var culled_rooms = room_bodies.slice(0, rng.randi_range(10, 15))
+	for r in culled_rooms:
 		var r_size = Vector2(r.get_node("CollisionShape2D").shape.size / cell_size)
 		var r_pos = tile_map.local_to_map(r.global_position)
-		if rng.randf() < 0.3:
-			for w in range(2, r_size.x - 2):
-				for h in range(2, r_size.y - 2):
-					floor_cells.append(Vector2i(w + r_pos.x, h + r_pos.y))
-					tile_map.set_cell(0, Vector2i(w + r_pos.x, h + r_pos.y), 1, Vector2i(1,0))
-					wall_cells.erase(Vector2i(w + r_pos.x, h + r_pos.y))
-			var center_of_room: Vector2i = Vector2i(floor(r_pos.x + r_size.x / 2), floor(r_pos.y + r_size.y / 2))
-			room_center_array.append(center_of_room)
-			print(room_center_array)
+		for w in range(2, r_size.x - 2):
+			for h in range(2, r_size.y - 2):
+				floor_cells.append(Vector2i(w + r_pos.x, h + r_pos.y))
+				tile_map.set_cell(0, Vector2i(w + r_pos.x, h + r_pos.y), 1, Vector2i(1,0))
+				wall_cells.erase(Vector2i(w + r_pos.x, h + r_pos.y))
+		var center_of_room: Vector2i = Vector2i(floor(r_pos.x + r_size.x / 2), floor(r_pos.y + r_size.y / 2))
+		room_center_array.append(center_of_room)
 		r.queue_free()
+	# HACK kind of ugly to loop over again to remove the remaining physics bodies
+	for rr in get_node("Rooms").get_children():
+		rr.queue_free()
+	print(room_center_array)
 	Globals.ASTAR_DIMENSIONS = tile_map.get_used_rect()
 	place_walls()
 	SignalBus.emit_signal("dungeon_tileset_generated")
