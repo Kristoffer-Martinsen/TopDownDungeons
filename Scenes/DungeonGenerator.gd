@@ -44,22 +44,27 @@ func create_room_bodies(tile_position: Vector2i) -> void:
 		)
 	collision_shape.position += Vector2(collision_shape.shape.size.x / 2, collision_shape.shape.size.y / 2)
 	get_node('Rooms').add_child(room_body)
-	room_body.global_position += Vector2(rng.randi_range(-64, 64), rng.randi_range(-64, 64))
+	room_body.global_position += Vector2(rng.randi_range(-6*16, 6*16), rng.randi_range(-6*16, 6*16))
 	spawn_location = Vector2(50, 50)
 
 func _connect_room_centers() -> void:
-	var corridor_start: Vector2i
-	var corridor_end: Vector2i
 	#TODO create corridors based on a minimum spanning tree
-	for room in room_center_array:
-		if room_center_array.size() > 1:
-			corridor_start = room_center_array.pop_front()
-			corridor_end = room_center_array.front()
-		var corridor_path: Array[Vector2i] = pathfinding.get_move_path(corridor_start, corridor_end)
-		for c in corridor_path:
-			floor_cells.append(Vector2i(c.x, c.y))
-			tile_map.set_cell(0, Vector2i(c.x, c.y), 1, Vector2i(1,0))
-			wall_cells.erase(Vector2i(c.x, c.y))
+	var delaunay_points = Geometry2D.triangulate_delaunay(room_center_array)
+	for p in len(delaunay_points) / 3:
+		var triangle_points = []
+		for n in 3:
+			var i = delaunay_points[(p * 3) + n]
+			triangle_points.append(i)
+		#connect
+		for i in 2: # Tutorial said 3 but that resulted in an error :thinking:
+			# TODO make a list of connections between rooms that I can make a mst from
+			var room1 = room_center_array[triangle_points[i]]
+			var room2 = room_center_array[triangle_points[i + 1] % 3]
+			var corridor_path: Array[Vector2i] = pathfinding.get_move_path(room1, room2)
+			for c in corridor_path:
+				floor_cells.append(Vector2i(c.x, c.y))
+				tile_map.set_cell(0, Vector2i(c.x, c.y), 1, Vector2i(1,0))
+				wall_cells.erase(Vector2i(c.x, c.y))
 
 func place_walls() -> void:
 	for x in range(Globals.ASTAR_DIMENSIONS.position.x - 5, Globals.ASTAR_DIMENSIONS.position.x + Globals.ASTAR_DIMENSIONS.size.x + 5):
@@ -85,7 +90,7 @@ func generate_room_floors() -> void:
 	# HACK kind of ugly to loop over again to remove the remaining physics bodies
 	for rr in get_node("Rooms").get_children():
 		rr.queue_free()
-	print(room_center_array)
 	Globals.ASTAR_DIMENSIONS = tile_map.get_used_rect()
 	place_walls()
 	SignalBus.emit_signal("dungeon_tileset_generated")
+

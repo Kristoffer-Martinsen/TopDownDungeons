@@ -18,6 +18,8 @@ func _create_astar2d_grid():
 	ASTAR_GRID = AStarGrid2D.new()
 	ASTAR_GRID.region = ASTAR_DIMENSIONS
 	ASTAR_GRID.cell_size = Vector2(16, 16)
+	ASTAR_GRID.default_compute_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
+	ASTAR_GRID.default_estimate_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
 	ASTAR_GRID.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
 	ASTAR_GRID.update()
 	SignalBus.dungeon_generation_complete.connect(_get_tile_data)
